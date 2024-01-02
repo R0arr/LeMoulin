@@ -1,0 +1,286 @@
+{% extends "layout.html" %}
+
+{% block main %}
+<form>
+    <fieldset>
+        <label for="menu-item" class="space-top">Chercher un article</label>
+        <input type="search" name="menu-item" placeholder="Article" autofocus> 
+    </fieldset>
+</form>
+<alert> </alert>
+
+<section class="menu"> </section>
+<section class="summary space-top"> </section>
+
+<script>
+
+    const input = document.querySelector('input');
+    const section1 =  document.querySelector(".menu");
+    const section2 = document.querySelector(".summary");
+    
+    const menuData = [];
+
+    input.addEventListener('keyup', () => {
+        item = input.value.trim()
+
+        fetch('/get_menu?item=' + item )
+        .then(response => response.json())
+        .then(data => { 
+                const menu = data[0];
+                const id = data[1];  
+
+                clearMenu();
+                displayMenu(menu);
+                updateQty();
+                addItem(id);
+        })
+        .catch(error => console.error("Error:", error));
+    });   
+
+
+
+    function removeItem() {
+        const rows = document.querySelectorAll(".row_item");
+        const remove_buttons = document.querySelectorAll('.cross');
+
+        remove_buttons.forEach((button, index) => {
+            button.addEventListener('click', () => {
+                const row = rows[index];
+                const row_id = row.id;
+
+                for (let i = 0; i < menuData.length; i++) {
+
+                    item = menuData[i]
+                
+                    if (item.id == row_id) {
+                        menuData.splice(i,1);
+                        displayOrder();
+                    }
+                }
+            });
+         });
+    }
+
+    function submit_menu(id) {
+        const submit_button = section2.querySelector('button.submit');
+        submit_button.addEventListener('click', () => submit(menuData, id));
+    }
+
+    function submit(menu, id) {
+        if (menu.length > 0) {
+            if (menu.length > 0) {
+                fetch("/update_cart", {
+                    method : 'POST',
+                    headers : {
+                        "content-type" : 'application/json',
+                        "X-type" : 'order_items'
+                    },
+                    
+                    body:JSON.stringify(menu)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);                
+                    location.assign('/rdv?bakery_id=' + id)
+                })
+                .catch(error => console.error(error));           
+                
+            }
+        }
+    }
+  
+   
+
+    function clearMenu() {
+
+        const children = section1.querySelectorAll(":scope > *");
+        if (children) {
+            children.forEach(child => child.remove());
+        }    
+
+    } 
+
+    function displayMenu(menu) {        
+        
+        menu.forEach(item => {
+
+            const div = document.createElement('div');
+            div.className = "menu-item";
+            div.id = item['id'];
+
+            const child1 = document.createElement('div');
+            const child2 = document.createElement('div');
+            const child3 = document.createElement('div');
+            const child4 = document.createElement('button');
+
+            child1.className = "menu-name";
+            child2.className = "menu-price";
+            child3.className = "menu-qty";
+            child4.className = "add";         
+           
+
+            child1.textContent = item.name
+            child2.textContent = item.price.toFixed(2)+ "€";
+            child4.textContent = "OK";            
+
+            const left_qty = document.createElement('div');
+            const middle_qty = document.createElement('div');
+            const right_qty = document.createElement('div');
+
+            left_qty.classList = "qty-item left";
+            middle_qty.classList = "qty-item qty";
+            right_qty.classList = "qty-item right";
+
+            left_qty.textContent = "-";
+            middle_qty.textContent = 0;
+            right_qty.textContent = "+";
+
+            child3.append(left_qty, middle_qty, right_qty);
+            div.append(child1,child2,child3,child4);
+            section1.appendChild(div);            
+            
+            
+        });
+    }
+
+    function updateQty() {
+    
+    const minus_Buttons = document.querySelectorAll(".left");
+    const qty_Windows = document.querySelectorAll(".qty");
+    const plus_Buttons = document.querySelectorAll(".right");  
+    const quantities = Array.from(qty_Windows).map(qty => 0);  
+
+    minus_Buttons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            if (quantities[index] > 0 ) {
+                quantities[index]--;
+                qty_Windows[index].textContent = quantities[index];
+            } 
+        });        
+    });
+
+    plus_Buttons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            if (quantities[index] <= 20) {
+                quantities[index]++;
+                qty_Windows[index].textContent = quantities[index];
+            }
+
+        });
+    });          
+
+}
+
+function addItem(id) {
+
+const add_buttons = document.querySelectorAll('.add');
+const div_items = document.querySelectorAll('.menu-item');
+const name_items = document.querySelectorAll('.menu-name');
+const price_items = document.querySelectorAll('.menu-price');
+const qty_items = document.querySelectorAll('.qty');                
+
+add_buttons.forEach(button => {
+    button.addEventListener("click", (event) => {
+        const index = Array.from(add_buttons).indexOf(event.target);
+        const div_item = div_items[index];
+        const item_id = div_item.id;
+        const name = name_items[index].textContent;
+        const qty = parseInt(qty_items[index].textContent,10);
+        const unit_price = parseFloat(price_items[index].textContent); 
+        const alert =  document.querySelector("alert");
+        
+        console.log(qty);
+
+        if (qty > 0) {
+            //const itemId = document.querySelectorAll(".menu-item")[index].id;
+            //const itemUnitPrice = parseFloat(document.querySelectorAll(".menu-price")[index].textContent);
+            alert.innerHTML = "";
+            if (alert.classList == "alert-div") alert.classList.toggle('alert-div');
+            menuData.push({"id" : item_id, "name" : name, "qty" : qty, "price" : unit_price });  
+            div_item.remove();                       
+            displayOrder(id); 
+                                       
+        }
+        
+        else  {
+            alert.innerHTML = 'Vous devez ajouter au moins un article';
+            if (! alert.classList.contains('alert-div'))  alert.classList.toggle('alert-div');
+        }
+        
+    });
+
+});
+}
+
+function clearOrder() {
+    const order = section2.querySelectorAll(":scope > *");
+    if (order) {
+        order.forEach(element => element.remove());        
+    }        
+}
+
+
+function displayOrder(id) {
+    clearOrder();
+
+    if (menuData) {
+        const summary = document.querySelector(".summary");
+        const table = document.createElement('table');        
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+        const row_headers = document.createElement('tr');
+        const h1 = document.createElement('th');
+        const h2 = document.createElement('th');
+        const h3 = document.createElement('th');
+
+        h1.textContent = "Article";
+        h2.textContent = "Qté"; 
+        h3.textContent = "";        
+        
+        row_headers.append(h1,h2,h3);
+        thead.appendChild(row_headers);
+        table.appendChild(thead);
+        table.appendChild(tbody);
+
+        section2.appendChild(table);
+
+        menuData.forEach(item => {
+            const row_body = document.createElement('tr');
+            const data1 = document.createElement('td');
+            const data2 = document.createElement('td');
+            const data3 = document.createElement('td');
+            const button = document.createElement('button');
+            
+            data3.className = "cell-button"
+            row_body.className = "row_item";
+            button.className = "cross";
+            row_body.id = item.id;
+            data1.textContent = item.name;
+            data2.textContent = item.qty;
+            button.textContent = "x";
+            
+            
+            data3.append(button);
+            row_body.append(data1, data2, data3);
+            tbody.append(row_body);         
+            
+        });
+    
+
+        const submit_button = document.createElement('button');
+        submit_button.textContent="Valider";
+        submit_button.classList="submit space-bottom";
+        section2.append(submit_button);
+
+        removeItem();
+        submit_menu(id);
+
+    }       
+}    
+ 
+
+
+</script>
+
+
+{% endblock %}

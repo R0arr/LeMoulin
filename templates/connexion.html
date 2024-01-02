@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block head %}    
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+{% endblock %}
+
+{% block main %}
+
+
+
+
+{% if message %}
+<p class="alert-div"> {{ message }} </p>
+{% endif %}
+
+
+<form action="/connexion" method="post">
+    <fieldset>
+        <legend>Connexion</legend>
+        <label for="email">Email</label>
+        <input autofocus autocomplete="off" id="email" name="email" placeholder="Email" type="text" value="{{ email }}">
+        <label for="password">Mot de passe</label>
+        <input autofocus autocomplete="off" id="password" name="password" placeholder="Mot de passe" type="password"> 
+        {{ recaptcha | safe}} 
+        <button type="submit">Connexion</button> 
+    </fieldset>
+</form>
+<div class="register-link">
+    <p>Vous n'avez pas encore de compte ?<p>
+    <a href="/inscription">
+        <button type="submit">Inscription</button>
+    </a>   
+</div>
+
+
+ 
+  
+
+
+  
+   
+
+
+
+{% endblock %}

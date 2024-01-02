@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+
+<alert> </alert>  
+<form action="/confirmation" id="pickup-form">
+    <fieldset>
+        <legend>Quand récupérer votre commande ?</legend>
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token }}">
+        <label for="pickup-date">Date</label>  
+        <input type="date" id="pickup-date" name="pickup-date">      
+        <label for="weekly" class="checkbox">Chaque semaine? </label>
+        <input type="checkbox" name="weekly" id="weekly" value="weekly">       
+        {% if session.type == "baker" %}
+        <label for="client">Client</label>
+        <input type="text" name="client">
+        {% endif %}
+        <button type="submit" id="valider">Valider</button>
+    </fieldset>
+</form>
+<script type ="text/javascript">
+
+function formatDate(date) {
+    const day = date.getDate();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    return `${year}-${month}-${day}`;
+}
+
+function setDate() {
+    date_input = document.querySelector("#pickup-date");
+
+    let current_date = new Date();
+    let limit_date = new Date(current_date);
+    limit_date.setDate(current_date.getDate() + 7);
+
+    date_input.min = formatDate(current_date); 
+    date_input.max = formatDate(limit_date);
+}
+
+setDate();  // set date min and max in the input date field
+
+
+
+
+const closed_days = JSON.parse({{ bakery['closed'] | tojson | safe }}) ;
+const form = document.querySelector("#pickup-form");
+const week_days = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+
+
+    form.addEventListener('submit', event => {
+
+        event.preventDefault();
+        const chosen_date = document.querySelector("#pickup-date").value;
+        const weekly =  document.querySelector("#weekly");
+        const client_input = document.querySelector('[name = "client"]');
+        const csrf_token = document.querySelector('input[type = "hidden"]').value
+        const alert = document.querySelector('alert');
+        let client;
+        
+
+        if (client_input) client = client_input.value;
+        else client = null;       
+
+        let order_type = "";
+        if (weekly.checked) order_type = weekly.value;   
+            
+        const chosen_day = new Date(chosen_date).getDay() - 1;
+        let submit_form = true;     
+        
+        if (chosen_date == "") {
+            alert.innerHTML = "Vous devez sélectionner une date";
+            if (alert.classList != "alert-div")  alert.classList.toggle('alert-div')
+            submit_form = false;
+        }       
+
+        else {
+            for (let index = 0; index < week_days.length; index++) {
+            for (const closed_day of closed_days) {
+                
+                if (closed_day == week_days[index] && chosen_day == index){
+
+                    alert.innerHTML = `Le magasin est fermé le ${closed_day}. Veuillez choisir un autre jour`;
+                    if (alert.classList != "alert-div")  alert.classList.toggle('alert-div')
+                    submit_form = false;
+                    break;                 
+
+                }
+            }
+
+            if (!submit_form) break ;
+            
+            }
+
+        }
+        
+
+        if (submit_form) {       
+
+            {% if session['user_id'] %}
+
+            order_date = new Date(chosen_date);
+            order_data = [];
+            order_data.push(order_date, order_type, client, csrf_token)           
+
+            fetch('/update_cart', {
+                method: 'POST',
+                headers: {
+                    'content-type' : 'application/json',
+                    'X-type': 'order_date'
+                },
+                body : JSON.stringify(order_data)
+
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                form.submit();
+            })
+            .catch(error => console.error(error))  
+            
+            {% else %}
+
+            document.querySelector(".alert-div").innerHTML = "Vous devez d'abord vous connecter";
+
+            {% endif %}
+                    
+        } 
+
+    }); 
+
+</script>
+
+
+
+{% endblock %}

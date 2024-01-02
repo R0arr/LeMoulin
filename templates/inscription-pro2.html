@@ -1,0 +1,20 @@
+
+{% extends "layout.html" %}
+{% block main %}
+
+<form action="/inscription-pro" method="post"  id="bakery-register-form">
+    <fieldset>
+        <legend>Etape 2 - Inscription boulangerie</legend>
+        <input type="text" autofocus name="name" placeholder="Nom boulangerie">
+        <input type="text" autofocus name="adress1" placeholder="Nom de la rue">
+        <input type="text" autofocus name="adress2" placeholder="Complément adresse">
+        <input type="text" autofocus name="zip" placeholder="Code postal">
+        <input type="text" autofocus name="city" placeholder="Ville">
+        <input type="text" autofocus name="phone" placeholder="Téléphone">       
+        <input type="text" autofocus name="closed" placeholder="Jours fermeture">
+        <button class="space-top">Enregistrer</button>        
+    </fieldset>
+    
+</form>
+
+{% endblock %}

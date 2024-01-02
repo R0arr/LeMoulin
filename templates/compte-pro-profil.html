@@ -1,0 +1,50 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+{% with messages=get_flashed_messages(with_categories=True) %}
+
+<form id="profile" action="" method="post">
+    
+        {% for category, message in messages %}
+            {% if category == 'updated' %}
+            <alert class="space-bottom"> 
+                {{ message }}
+            </alert>                
+            {% endif %} 
+        {% endfor %} 
+   
+    <fieldset>     
+        <legend>Mon Profil</legend>
+                                          
+                    <label for="name">Nom</label>
+                    <input type="text" name="name" value="{{ user.name }}" id="name">                                            
+                    <label for="mail">Mail</label>
+                    <input type="text" name="mail" value="{{ user.mail }}" id="mail">                   
+                        {% for category, message in messages %}
+                            {% if category == 'mail' %}
+                                <p>{{ message }}</p>
+                            {% endif %} 
+                        {% endfor %}                    
+                    <label for="password">Mot de passe</label>
+                    <input type="text" name="password" value="{{ user.password }}" id="password">                   
+                        {% for category, message in messages %}
+                            {% if category == 'password' %}
+                                <p>{{ message }}</p>
+                            {% endif %} 
+                        {% endfor %}                      
+                    <label for="phone">Téléphone</label>
+                    <input type="text" name="phone" value="{{ user.phone }}" id="phone">                    
+                        {% for category, message in messages %}
+                            {% if category == 'phone' %}
+                                <p>{{ message }}</p>
+                            {% endif %} 
+                        {% endfor %}                       
+                    <button>Mettre à jour</button>        
+    </fieldset>
+</form>
+{% endwith %}
+
+
+
+{% endblock %}

@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block main %}
+<form action="/inscription-pro" method="post"  id="form-registration-2">
+{% for category in categories %}
+    <h2 class="space-top"> {{ category | title}} </h2>
+    
+    <section class="menu-cat">
+    {% for item in menu %}
+        {% if item.cat == category %}
+            <div class="item">
+                <div> {{ item.name }} </div>
+                <div>  
+                    <input name="{{ item.name }}" class="price" value="{{ item.price | eur }}">
+                    <div class="plus-minus"> 
+                        <button class="minus">-</button>
+                        <button class="plus">+</button>
+                    </div>
+                </div>                               
+                <div>
+                    <input type="checkbox"> 
+                </div>                
+            </div>
+        {% endif %}
+    {% endfor %}
+    </section>            
+{% endfor %}
+    <button class="space-top">Enregistrer</button>
+</form>
+
+<script>
+
+const prices = document.querySelectorAll(".price");
+const minus_buttons = document.querySelectorAll('button.minus');
+const plus_buttons = document.querySelectorAll('button.plus');
+const prices_array = [];
+
+prices.forEach((price) => {
+    price.addEventListener('click', editPrice);
+});
+
+function editPrice(event) {    
+    const element = event.target;
+    element.focus();
+    element.removeEventListener('click', editPrice);
+    element.addEventListener('click', checkInputOnce);
+}
+
+function checkInputOnce(event) {
+    const element = event.target;
+    const value = element.value.trim().replace(/\s+$/,"");
+    const pattern = /^\d+(\.\d{2})?€?$/;
+    console.log(value);
+
+    if (pattern.test(value)) {
+        element.style.backgroundColor = "#f5f5dc";
+        element.value = `${value.replace(/€/g,"")}€`;
+    } else {
+        element.value = "";
+        element.style.backgroundColor = "#fa8072";
+    }
+
+    // Remove the event listener after it's been triggered once
+    element.removeEventListener('click', checkInputOnce);
+    // Add back the 'editPrice' listener for future clicks
+    element.addEventListener('click', editPrice);
+}
+
+prices.forEach(price => {
+    prices_array.push(parseFloat(price.value));
+});
+
+minus_buttons.forEach((button, index) => {
+    button.addEventListener('click', (event) => {
+        event.preventDefault();
+
+        if (prices_array[index] >= 0.05) {
+            prices_array[index] -= 0.01
+            updatePrice(index)
+        }
+    });
+});
+
+plus_buttons.forEach((button, index) => {
+    button.addEventListener('click', (event) => {
+        event.preventDefault();            
+        prices_array[index] += 0.01;
+        updatePrice(index);            
+    });
+});
+
+ 
+function updatePrice(index) {
+
+    prices[index].value = prices_array[index].toFixed(2) + "€";    
+
+}
+
+
+
+</script>
+
+
+{% endblock %}

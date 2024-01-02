@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+
+
+<h1> {{ bakery['name'] }} </h1>
+
+<h2> {{ bakery['adress1'] }} {{ bakery['zip'] }} {{ bakery['city'] }} </h2>
+
+<form action="/rdv" method="get" id="order-form">
+    <input type="hidden" name="bakery_id" value="{{ bakery['id'] }}">
+    <button class="btn-div" id="order"> Commander </button>
+</form>
+<div class="alert-div"></div>
+
+
+{% for cat in menu_cat %}
+
+<section class="accordion space-top">
+    <div class="tab">
+        <input type="checkbox"  id="{{ cat['cat'] }}" unchecked>
+        <label for="{{ cat['cat'] }}" class="tab-label">{{ cat['cat'] }}</label>         
+        <div class="tab-content">
+            {% for item in menu %}
+            {% if item['cat'] == cat['cat'] %}            
+            
+            <div class="menu-item">
+                <div class="menu-name" id="{{ item['id'] }}">{{ item['name'] }} </div>
+                <div class="menu-price">  {{ item['price'] | eur }}</div>
+                <div class="menu-qty">
+                    <div class="qty-item left">-</div>
+                    <div class="qty-item qty">0</div>
+                    <div class="qty-item right">+</div>
+                </div>                
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+{% endfor %}
+
+<script>
+
+    minus_Buttons = document.querySelectorAll(".left");
+    qty_Windows = document.querySelectorAll(".qty");
+    plus_Buttons = document.querySelectorAll(".right");
+    order_Form = document.querySelector("#order-form");
+    
+    const quantities = Array.from(qty_Windows).map(qty => 0);
+
+    minus_Buttons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            if (quantities[index] > 0 ) {
+                quantities[index]--;
+                updateQtyDisplay(index)
+            } 
+        });        
+    })
+
+    plus_Buttons.forEach((button, index) => {
+        button.addEventListener("click", () => {
+            if (quantities[index] <= 20) {
+                quantities[index]++;
+                updateQtyDisplay(index);
+            }
+
+        })
+    })    
+
+    function updateQtyDisplay(index) {
+        qty_Windows[index].textContent = quantities[index];
+    }
+
+    order_Form.addEventListener("submit", event => {
+        event.preventDefault();
+        const userQty = Array.from(qty_Windows);
+        const menuData = [];
+        
+        userQty.forEach((qty, index) => {
+            const quantity = parseInt(qty.textContent,10);
+
+            if (quantity > 0) {
+                const itemId = document.querySelectorAll(".menu-name")[index].id;
+                const itemUnitPrice = parseFloat(document.querySelectorAll(".menu-price")[index].textContent);
+                menuData.push({"id" : itemId, "qty" : quantity, "price" : itemUnitPrice });                
+            }
+        });
+        
+        if (menuData.length > 0) {
+            fetch("/update_cart", {
+                method : 'POST',
+                headers : {
+                    "content-type" : 'application/json',
+                    "X-type" : 'order_items'
+                },
+                
+                body:JSON.stringify(menuData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);                
+                order_Form.submit();
+            })
+            .catch(error => console.error(error));           
+            
+        }
+
+        else {
+            
+            document.querySelector(".alert-div").innerHTML = "Vous devez ajouter au moins un article"
+        }
+
+    });
+    
+
+
+
+
+
+</script>
+
+
+
+
+
+{% endblock %}

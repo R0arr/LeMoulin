@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+<h1> Bienvenue sur votre espace !</h1>
+<h2 style="font-weight: 700;"> {{ name }} </h2>
+
+<section class="nav-menu">
+    <div>
+        <a href="/compte-pro/commandes">Commandes à venir</a>
+    </div>
+    <div>
+        <a href="/commande">Enregistrer commande</a>
+    </div>
+    <div>
+        <a href="/compte-pro/menu">Mon menu</a>
+    </div>        
+    <div>
+        <a href="/compte-pro/profil">Profil</a>
+    </div>
+    <div>
+        <a href="/deconnexion">Déconnexion</a>
+    </div>  
+</section>
+
+
+{% endblock %}

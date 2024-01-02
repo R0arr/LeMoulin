@@ -1,0 +1,224 @@
+{% extends "layout.html" %}
+
+{% block main %}
+<input type="hidden" name="csrf-token" value="{{ csrf_token }}">
+
+
+{% if reg_orders %}
+
+<h2 class="space-bottom"> Mes commandes régulières </h2>
+<section class="orders reg space-bottom">
+    <div class="orders-headers fw700 bgc-antique ">
+        <div> Date  </div>
+        <div> Boulangerie </div>
+        <div> Total </div>
+        <div> Détails </div>
+    </div>
+
+    {% for order in reg_orders %}
+    {% if order.status != 2 %}
+    <div class="orders-headers">
+        <div> {{ order.ref_day | day_name }} </div>
+        <div> {{ order.type | order_type}}  </div>
+        <div> {{ order.total_order | eur }} </div>
+        <div> 
+            <div class='file'>&#x276F;</div>
+        </div>
+    </div>
+
+   
+    <div class="orders-list">
+        {% for item in order.list %}
+        <div> {{ item.name }} x {{ item.item_qty }} - {{ item.item_price | eur}} </div>
+        {% endfor %}
+        <div class="order-buttons" id="order-{{ order.ref_order }}">
+            {% if order.status %}
+            <button class="cancel"> Annuler </button> 
+            {% else %}
+            <button class="activate"> Activer </button> 
+            {% endif %}
+            {% if not order.status %}
+            <button class="delete"> Supprimer </button> 
+            {% endif %}
+        </div>
+             
+    </div>   
+    {% endif %}
+    {% endfor %}
+</section>
+
+
+
+
+{% endif %}
+
+<h2 class="space-top space-bottom"> Mes commandes </h2>
+<section class="orders all space-bottom">
+    <div class="orders-headers fw700 bgc-antique ">
+        <div> Date  </div>
+        <div> Boulangerie </div>
+        <div> Total </div>
+        <div> Détails </div>
+    </div>
+</section>
+
+<script>      
+      
+    const user_name = document.querySelector('h2'); 
+    const user_data = document.querySelectorAll('p');
+    const section_orders = document.querySelector(".orders.all"); 
+    const section_orders_reg = document.querySelector(".orders.reg"); 
+    const order_buttons = document.querySelectorAll(".cancel, .activate, .delete");  
+    
+
+    fetch('/orders')
+    .then(response => response.json())
+    .then(data => {
+        const orders = data[0];        
+        try {           
+            
+            displayOrders(orders); 
+        }  catch (error) {
+            console.error("Error : ", error);
+        }
+
+        finally {            
+            accordion();            
+        }              
+    })
+    .catch(error => console.error("Error:", error));   
+
+    order_buttons.forEach(button => {
+        button.addEventListener("click",() => {          
+            
+            const order_id = button.parentElement.id.replace("order-", "").trim()           
+            const type = button.classList.value;
+            const csrf_token = document.querySelector('input[type="hidden"]').value
+            const type_message = button.textContent.toLowerCase();
+            const order_data = [order_id, type, 0, csrf_token] ;
+            
+            console.log(order_id, type);
+
+            if (window.confirm("Voulez vous " + type_message + " cette commande ?")) {                
+
+                fetch('update-order', {
+                    method: 'POST',
+                    headers : {
+                        "content-type" : 'application/json'                        
+                    },
+                    body : JSON.stringify(order_data)
+
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    alert(data.message);
+                    location.reload();
+                })
+                .catch(error => console.log("Error:", error));            
+            }                 
+            
+        });      
+
+    });
+
+    
+    function clearOrders() {
+        const orders = section_orders.querySelectorAll(":scope > *");  
+        let orders_array = Array.from(orders);              
+        orders_array = orders_array.slice(1);            
+        
+        if  (orders_array) {            
+
+            orders_array.forEach(element => {
+                element.remove();
+            });
+        }           
+        
+       
+    }    
+
+        
+    function displayOrders(orders) {
+        
+        section_orders.style.border = "solid black 2px"; 
+        if (section_orders_reg) section_orders_reg.style.border = "solid black 2px";
+
+        orders.forEach(order => {
+            
+            if (order.date != null) {
+
+                const div1 = document.createElement("div");
+                div1.classList = "orders-headers";
+                div1.id = "order-" + order.id;
+
+                const child1 = document.createElement("div");
+                const child2 = document.createElement("div");
+                const child3 = document.createElement("div");
+                const child4 = document.createElement("div");
+
+                child1.textContent = order.date;
+                child2.textContent = order.bakery_name;
+                if (order.total_order) child3.textContent = order.total_order.toFixed(2) + "€";
+                else child3.textContent = "0.00€";    
+                child4.innerHTML = "<div class='file'>&#x276F;</div>";
+
+                div1.append(child1, child2, child3, child4);
+                section_orders.appendChild(div1);
+                
+
+                const div2 = document.createElement("div");
+                div2.classList = "orders-list";
+                
+                const order_items = order.list;                
+
+                order_items.forEach(item => {
+
+                    const child = document.createElement("div");
+                    child.textContent = `${item.item_name} x ${item.item_qty} - ${item.item_price}€`;
+                    
+                    div2.appendChild(child);
+                });    
+                
+                section_orders.appendChild(div2);
+            }
+                
+        });
+    }
+        
+
+    function accordion() {
+
+        const unfold_buttons = document.querySelectorAll(".file");
+        const order_list = document.querySelectorAll(".orders-list");
+             
+
+        unfold_buttons.forEach((element, index) => {
+            element.addEventListener("click", () => {
+                
+                if (order_list[index].classList.contains("active")) {
+                    order_list[index].classList.remove("active");
+                    element.style.transform = "rotate(90deg)";
+                }
+                else  {
+                    order_list[index].classList.add('active');
+                    element.style.transform = "rotate(-90deg)";
+
+                }      
+                
+            });
+            
+        });
+    }
+
+    
+
+     
+
+</script>
+
+{% endblock %}
+
+
+
+

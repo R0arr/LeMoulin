@@ -1,0 +1,96 @@
+@page {
+    size: A4;
+    margin: 1cm;
+}
+
+
+.space-bottom {
+    margin-bottom: 50px;
+}
+
+.fw700 {
+    font-weight: 700;
+}
+
+.bgc-antique {
+    background-color: antiquewhite;
+
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 10px;
+
+    &.title {
+        margin:0;
+    }
+}
+
+th, td {
+    border: 1px solid black;
+    padding: 8px;
+    text-align: left;
+}
+
+.orders {
+    border: solid black 2px;
+    font-family: 'Courier New', Courier, monospace;
+    overflow:auto;
+    width: 100%;
+      
+}
+
+.orders-summary {
+    width: 100%;
+}
+
+.orders-headers {   
+    font-size: 1rem;
+    display:flex;    
+    align-items: stretch;
+    border: solid 1px black;    
+}
+
+.orders-headers > * {
+    
+    padding: 1rem;
+    flex:1;
+    min-width: 0;
+    word-wrap: break-word;
+    border-right: solid black 1px ;
+}
+
+.orders-headers > :nth-child(4) {
+    display:flex;
+    justify-content: center;  
+    align-items: center;  
+    border-right: solid black 0px ;
+}
+
+.orders-list {
+    display:flex;
+    flex-direction: column;
+    text-align: left;
+    padding: 0 1rem;
+    border-left:solid black 1px;
+    border-right: solid black 1px;
+    
+}
+
+.file {
+    
+    cursor: pointer;
+    transform: rotate(90deg);
+    font-weight: 700;
+    text-decoration: none;
+    color: black;
+}
+
+
+@media screen and (max-width: 768px) {
+    .accordion {
+        width:80%;
+    }
+ 
+}

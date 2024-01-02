@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block main %}
+
+<form action="/inscription-pro" method="post" id="user-register-form">
+    <fieldset>        
+        <legend>Etape 1 - Inscription Utilisateur</legend>        
+        <input autofocus autocomplete="off" name="email" placeholder="Email" type="text" value="{{ email }}">        
+        <input autofocus autocomplete="off" name="email_confirmation" placeholder="Email" type="text" value="{{ email_confirmation }}">       
+        <input autofocus autocomplete="off" name="name" placeholder="Nom" type="text" value="{{ name }}">        
+        <input autococus autocomplete="off" name="password" placeholder="Mot de passe" type="password" value="{{ password }}">       
+        <input autococus autocomplete="off" name="confirmation" placeholder="Mot de passe" type="password" value="{{ confirmation }}">        
+        <input autococus autocomplete="off" name="phone" placeholder="Téléphone" type="text" value="{{ phone }}">
+        <button type="submit">Valider</button>        
+    </fieldset>
+</form>
+<alert></alert>
+
+<script>
+
+</script>
+
+
+{% endblock %}

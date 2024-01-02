@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+{% if message %}
+
+<p class="alert-div"> {{ message }}</p>
+
+{% endif %}
+
+<form action="/inscription" method="post" class="space-bottom" id="register-form">
+    <fieldset>        
+        <legend>Inscription</legend>
+        <label for="email">Email</label>
+        <input autofocus autocomplete="off" name="email" placeholder="Email" type="text" value="{{ email }}">
+        <label for="email_confirmation">Confirmer votre email</label>
+        <input autofocus autocomplete="off" name="email_confirmation" placeholder="Email" type="text" value="{{ email_confirmation }}">
+        <label for="name">Nom</label>
+        <input autofocus autocomplete="off" name="name" placeholder="Nom" type="text" value="{{ name }}">
+        <label for="password">Mot de passe</label>
+        <input autococus autocomplete="off" name="password" placeholder="Mot de passe" type="password" value="{{ password }}">  
+        <label for="confirmation">Confirmer mot de passe</label>
+        <input autococus autocomplete="off" name="confirmation" placeholder="Mot de passe" type="password" value="{{ confirmation }}">
+        <label for="phone">Téléphone</label>
+        <input autococus autocomplete="off" name="phone" placeholder="Téléphone" type="text" value="{{ phone }}">
+        <button type="submit">Valider</button>        
+    </fieldset>
+</form>
+
+
+
+
+{% endblock %}
+ 

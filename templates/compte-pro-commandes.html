@@ -1,0 +1,240 @@
+
+{% extends "layout.html" %}
+
+{% block main %}
+
+{% with alerts=get_flashed_messages() %}
+    {% for alert in alert %}
+        {% if alert %}
+            <alert class="alert-div"> {{ alert }}</alert> 
+        {% endif %}
+    {% endfor %}    
+{% endwith %}
+
+{% if message %}  
+<alert class="alert-div"> {{ message }}</alert> 
+{% endif %} 
+
+<form action="/compte-pro/commandes" method="post">
+    <fieldset>             
+        <legend>Commandes à venir</legend>        
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">        
+        <label for="orders-date">Quel jour ?</label>
+        <input type="date" id ="orders-date" name="date" value="{{ date }}" min="{{ today }}">   
+        <button>Valider</button>                   
+    </fieldset>
+    
+   
+</form>
+
+{% if orders %}
+    <div style="width:95%">
+        <button class="print space-bottom">Imprimer</button>
+    </div>
+    <section class="orders-summary">
+    {% for category in categories %}
+        <table class="title">
+            <thead>
+                <tr>
+                    <th> {{ category }}</th>
+                </tr>
+            </thead>
+        </table>  
+        <table>
+            <thead>
+                <tr>
+                    <th>Article</th>
+                    <th>Qté</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in summary %}
+                {% if item.cat == category %}
+                <tr>
+                    <td>{{ item.item_name }} </td>
+                    <td>{{ item.item_qty }}</td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endfor %}
+    </section>
+    <section class="orders">
+        <div class= "orders-headers fw700 bgc-antique">
+            <div>Date</div>
+            <div>Client</div>
+            <div>Total</div>
+            <div>Détails</div>
+        </div>      
+        
+        {% for order in orders %}
+            <div class="orders-headers" id="{{ order.id }}">
+                <div>{{ order.date }}</div>
+                {% if order.note %}
+                    <div>{{ order.note }}</div>
+                {% else %}
+                    <div>{{ order.name }}</div>
+                {% endif %}
+                <div> {{ order.total_order | eur }}</div>
+                <div class="file">&#x276F;</div>
+            </div>
+            <div class="orders-list">
+                {% set list = order.list %}
+                {% for item in list %}
+                    <div>{{ item.item_name }} x {{ item.item_qty }} - {{ item.item_price | eur}} </div>                
+                {% endfor %}
+                <div>
+                    <button class="cancel-order">Annuler</button>
+                    {% if order.is_regular %}                        
+                        <button class="cancel">Annuler tout</button>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    </section>
+{% endif %}
+
+<script>
+
+
+function accordion() {    
+
+    const unfold_buttons = document.querySelectorAll(".file");
+    const order_list = document.querySelectorAll(".orders-list");
+        
+
+    unfold_buttons.forEach((element, index) => {
+        element.addEventListener("click", () => {
+
+            
+            if (order_list[index].classList.contains("active")) {
+                order_list[index].classList.remove("active");
+                element.style.transform = "rotate(90deg)";
+            }
+            else  {
+                order_list[index].classList.add("active");
+                element.style.transform = "rotate(-90deg)";
+
+            }    
+            
+        });
+        
+    });
+}
+
+function cancelOrder() {
+        const cancel_buttons = document.querySelectorAll(".orders .cancel-order");
+        const cancel_all_buttons = document.querySelectorAll(".orders .cancel");
+
+
+        cancel_buttons.forEach(button => {
+            button.addEventListener("click",() => {          
+                
+                const order_id = button.parentElement.parentElement.previousElementSibling.id.replace("order-", "").trim()            
+                const type_message = button.textContent.toLowerCase(); 
+                const csrf_token = document.querySelector('input[type="hidden"]').value
+                const order_data = [order_id, csrf_token]              
+                
+
+                if (window.confirm("Voulez vous " + type_message + " cette commande ?")) {                
+
+                    fetch('/cancel-order?id=', {
+                        method: 'POST',
+                        headers: {
+                            "content-type" : "application/json"
+                        },
+                        body : JSON.stringify(order_data)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        alert(data.message);
+                        window.location.href = "/compte-pro/commandes";
+                    })
+                    .catch(error => console.log("Error:", error));            
+                }                 
+                
+            });      
+
+        });
+
+        cancel_all_buttons.forEach(button => {
+            button.addEventListener("click",() => {          
+                
+                const order_id = button.parentElement.parentElement.previousElementSibling.id.replace("order-", "").trim()           
+                const type = button.className;                
+                const csrf_token = document.querySelector('input[type="hidden"]').value
+                const type_message = button.textContent.toLowerCase();
+                const order_data = [order_id, type, 1, csrf_token] ;
+                
+                console.log(order_id, type);
+
+                if (window.confirm("Voulez vous annuler cette commande régulière ?")) {                
+
+                    fetch('/update-order', {
+                    method: 'POST',
+                    headers : {
+                        "content-type" : 'application/json'                        
+                    },
+                    body : JSON.stringify(order_data)
+
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.message);
+                        alert(data.message);
+                        location.reload();
+                    })
+                    .catch(error => console.log("Error:", error));            
+                }                 
+                
+            });      
+
+        });
+    }
+
+    function print_orders() {
+        const print_button = document.querySelector(".print");
+
+        print_button.addEventListener('click', () => {
+
+        const summary = document.querySelector(".orders-summary")
+        const orders = document.querySelector(".orders")        
+       
+        // remove the button tags from HTML 
+       
+        const tag = 'button';        
+        const regexPattern = new RegExp('<' + tag + '[\\s\\S^>]*>[\\s\\S^<]*<\\/' + tag + '>', 'gi');
+        let ordersHTML = orders.innerHTML;
+        ordersHTML = ordersHTML.replace(regexPattern,'');
+            
+
+        printWindow = window.open('','','width=600, height=600');
+        printWindow.document.open();
+        printWindow.document.write('<html><head> \
+                                     <link rel="stylesheet" type="text/css" href="/static/print-style.css"></head> \
+                                   ');                                     
+        
+        printWindow.document.write('<section class="orders-summary">'); 
+        printWindow.document.write(summary.innerHTML);  
+        printWindow.document.write('</section>');             
+        printWindow.document.write('<section class="orders">');
+        printWindow.document.write(ordersHTML);             
+        printWindow.document.write('</section></html>');              
+        printWindow.document.close();     
+        setTimeout(() => {
+            printWindow.print();
+        },1000);   
+
+        });     
+        
+    }      
+
+accordion();
+cancelOrder();
+print_orders();
+
+</script>
+
+{% endblock %}

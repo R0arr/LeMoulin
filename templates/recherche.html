@@ -1,0 +1,6 @@
+{% for bakery in bakeries %}
+
+<li> <a href="/boulangerie?bakery_id={{ bakery['id'] }}" class ="search-link"> {{ bakery['name'] }} : {{ bakery['zip'] }} {{ bakery['city'] }} </a> </li>
+
+{% endfor %}
+

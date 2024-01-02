@@ -1,0 +1,69 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+{% if order and total and date %}
+
+<h1>Votre commande est confirmée pour le 
+    <br>
+    <br><span style="font-weight: 700; font-size: 1.5rem;"> {{ date }} </span>
+</h1>
+
+
+
+<table>
+    <thead>
+        <tr>
+            <th class="th1"> Article </th>
+            <th> Qté </th>
+            <th> Prix </th>
+            <th> Total article </th>
+        </tr>    
+    </thead>
+
+
+
+    <tbody>
+        {% for item in order %}
+
+        <tr>
+            <td class="th1">{{ item['name'] }} </td>
+            <td>{{ item['item_qty'] }} </td>
+            <td>{{ item['item_price'] | eur }} </td>
+            <td>{{ item['total_price'] | eur }} </td>
+        </tr>    
+
+    {% endfor %}
+
+    </tbody>
+</table>
+
+<table class="space-top space-bottom">
+    <thead>
+        <tr>
+            <th class="th1">Total:</th>
+            <th>{{ total | eur }} </th>  
+        </tr>
+             
+    </thead>
+    
+</table>
+
+{% endif %}
+
+{% if alert %}
+
+<h1 class="space-top">{{ alert }}</h1>
+<form action="/rdv" method="get">  
+    <input type="hidden" name="bakery_id" value="{{ bakery }}">
+    <button>Retour</button>
+</form>
+
+
+{% endif %}
+    
+
+
+
+
+{% endblock %}

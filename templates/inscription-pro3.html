@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+{% block main %}
+<form action="/inscription-pro" method="post"  id="menu-registration-form">
+    <legend>Etape 3 - Inscription menu</legend>
+{% for category in categories %}
+    <label id="cat-title"> {{ category | title }} </label>
+    
+    <section class="menu-cat">
+    {% for item in menu %}
+        {% if item.cat == category %}            
+                <label for="{{ item.name }}"> {{ item.name }} </label> 
+                <div>
+                    <input id="{{ item.name }}" name="{{ item.name }}" class="price" value="{{ item.price | eur }}">                
+                    <input name="{{ item.name }}is_checked" type="checkbox">  
+                </div>                                               
+            
+        {% endif %}
+    {% endfor %}
+    </section>            
+{% endfor %}
+    <button class="space-top">Enregistrer</button>
+</form>
+
+
+{% endblock %}

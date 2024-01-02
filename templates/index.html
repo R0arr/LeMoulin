@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+
+<h1> {{ message }} {{message2}}</h1>
+
+
+<form action="/" method="get">
+    <input autofocus autocomplete="off" placeholder="Boulangerie, ville" name="bakery" type="search">
+    <button type="submit">Rechercher</button>
+</form> 
+
+
+<ul class="space-top" id="list">
+    
+</ul>
+
+
+<script type="text/javascript">
+    let input = document.querySelector('input')
+    input.addEventListener('keyup', async function() {
+        let search = input.value.trim();
+        
+        if (search.length >= 3) {
+
+            let response = await fetch('/recherche?bakery=' + search);            
+            let results = await response.text();  
+            document.querySelector("#list").innerHTML = results; 
+        
+        }
+        
+        else {
+
+            document.querySelector("#list").innerHTML = '';
+
+        }
+        
+
+    })
+
+</script>
+
+{% endblock %}

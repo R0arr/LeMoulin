@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block main %}
+
+{% with messages=get_flashed_messages() %}
+{% for message in messages %}
+
+    <alert class="ok-alert">{{ message }}</alert>
+
+{% endfor %}
+{% endwith %}
+
+
+
+<form action="" method="post" class="my-menu">
+    {% for category in categories %}
+    
+    <fieldset>
+        <legend>{{ category }}</legend>
+        {% for item in menu %}
+            {% if item.cat == category %}
+        <div>
+            <label for="{{ item.name }}"">{{ item.name }}</label>
+            <input type="text" id="{{ item.name }}" name="{{ item.name }}" value="{{ item.price | eur }}">
+            {% if item.message %}
+                <p>{{ item.message }}</p>
+            {% endif %}
+            <div class="hidden-input">
+                
+                {% set is_deleted = [] %}
+
+                {% if deleted %}
+                    {% for index in deleted %}
+                        {% if index == item.id %}
+                            <input name="del-{{ item.id }}" type="checkbox" checked>
+                            {% set temp = is_deleted.append(TRUE) %}                            
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+                
+                {% if not is_deleted %}
+                    <input name="del-{{ item.id }}" type="checkbox">
+                {% endif %}
+                
+                        
+                <a href="#" class="cancel">Supprimer</a>
+            </div>          
+        </div>       
+            {% endif %}
+        {% endfor %}
+       
+    </fieldset>
+    {% endfor %}
+    <button>Valider</button>
+</form>
+
+
+<script>
+
+    menus = document.querySelectorAll('legend');
+    menus.forEach(menu => {
+        menu.addEventListener('click', () => {
+            menu.parentElement.classList.toggle('active');
+        });        
+    });
+
+    
+    fieldsets = document.querySelectorAll('fieldset');
+    fieldsets.forEach( fieldset => {
+        alerts = fieldset.querySelectorAll('p');
+        
+
+        if (alerts.length != 0) fieldset.classList.toggle('active');
+
+    });
+
+    
+
+</script>
+
+{% endblock %}
